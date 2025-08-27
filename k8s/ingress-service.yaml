@@ -16,7 +16,7 @@ spec:
   ingressClassName: nginx
   rules:
     - host: fibcalculator.com
-    - http:
+      http:
         paths:
           - path: /?(.*)
             pathType: ImplementationSpecific
@@ -33,7 +33,7 @@ spec:
                 port:
                   number: 5000
     - host: www.fibcalculator.com
-    - http:
+      http:
         paths:
           - path: /?(.*)
             pathType: ImplementationSpecific
