@@ -2,7 +2,7 @@
 
 A multi-tier Fibonacci calculator demonstrating advanced Kubernetes orchestration with microservices architecture. Built with React, Express.js, Redis, and PostgreSQL, containerized with Docker and deployed on Google Kubernetes Engine (GKE) with automated CI/CD.
 
-## �️ Architecture
+## 🏗️ Architecture
 
 This application demonstrates a modern orchestrated microservices architecture:
 
@@ -14,6 +14,35 @@ This application demonstrates a modern orchestrated microservices architecture:
 - **Orchestration**: Kubernetes with services and ingress
 - **Deployment**: Google Kubernetes Engine (GKE)
 - **CI/CD**: GitHub Actions
+
+### System Diagram
+
+```
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   React Client  │────│  Express Server  │────│ Background      │
+│   (Frontend)    │    │     (API)        │    │ Worker          │
+│   Port: 3000    │    │   Port: 5000     │    │ (Fibonacci)     │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+         │                       │                        │
+         │                       │                        │
+         └───────────────────────┼────────────────────────┘
+                                 │
+                    ┌────────────┴─────────────┐
+                    │                          │
+            ┌───────▼──────┐          ┌────────▼─────┐
+            │    Redis     │          │ PostgreSQL   │
+            │   (Cache)    │          │ (Database)   │
+            │   Port: 6379 │          │  Port: 5432  │
+            └──────────────┘          └──────────────┘
+```
+
+### Components
+
+1. **Client (React + Nginx)**: Frontend SPA served by Nginx
+2. **Server (Express.js)**: REST API handling HTTP requests
+3. **Worker (Node.js)**: Background processor for Fibonacci calculations
+4. **Redis**: Caching layer for computed Fibonacci values
+5. **PostgreSQL**: Persistent storage for request history
 
 ## 🚀 Features
 
@@ -40,7 +69,7 @@ This application demonstrates a modern orchestrated microservices architecture:
 | SSL/Ingress | nginx-ingress, cert-manager, Let's Encrypt |
 | CI/CD | GitHub Actions |
 
-## �️ Local Development Setup
+## 🛠️ Local Development Setup
 
 ### Prerequisites
 
@@ -118,7 +147,7 @@ minikube stop
 5. **Result Storage**: Calculated value stored in Redis
 6. **Display**: Frontend fetches and displays results from both data stores
 
-## � CI/CD Pipeline
+## 🚀 CI/CD Pipeline
 
 The GitHub Actions workflow (`.github/workflows/deploy.yaml`) automates:
 
@@ -294,7 +323,7 @@ DOCKER_PASSWORD=<your-dockerhub-password>
 3. **Monitor**: Check GitHub Actions for build status
 4. **Verify**: Visit your domain when deployment completes
 
-## � Project Structure
+## 📁 Project Structure
 
 ```
 ├── client/                 # React frontend
