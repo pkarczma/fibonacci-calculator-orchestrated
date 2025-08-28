@@ -187,6 +187,18 @@ The Kubernetes manifests serve as the deployment blueprint, defining desired sta
 
 ## ☁️ Google Cloud Infrastructure Setup
 
+### Prerequisites
+
+**Local Machine Requirements:**
+- `gcloud` CLI installed and authenticated (optional, can use Cloud Shell instead)
+- Docker Hub account for image registry
+
+**GCP Console Setup:**
+- Google Cloud Project with billing enabled
+- Kubernetes Engine API enabled
+- Cloud DNS API enabled (if using custom domain)
+- Cloud Shell (has kubectl and helm pre-installed)
+
 ### Required GCP Services
 
 1. **Google Kubernetes Engine (GKE)** - Managed Kubernetes cluster
@@ -197,7 +209,7 @@ The Kubernetes manifests serve as the deployment blueprint, defining desired sta
 
 ### Detailed Setup Instructions
 
-#### 1. GKE Cluster Setup
+#### 1. GKE Cluster Setup (GCP Console)
 
 1. Navigate to GKE console in Google Cloud
 2. Click "Create Cluster"
@@ -212,29 +224,36 @@ The Kubernetes manifests serve as the deployment blueprint, defining desired sta
    - **Networking**: Enable HTTP load balancing
    - **Security**: Enable Workload Identity
 
-#### 2. Install Required Controllers
+#### 2. Install Required Controllers (GCP Cloud Shell)
 
-1. **Install nginx-ingress controller**:
+1. **Open Cloud Shell in GCP Console** and connect to your cluster:
    ```bash
-   kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
+   gcloud container clusters get-credentials fibonacci-calculator-cluster --region us-central1
    ```
 
-2. **Install cert-manager for SSL**:
+2. **Install nginx-ingress controller using Helm**:
+   ```bash
+   helm upgrade --install ingress-nginx ingress-nginx \
+     --repo https://kubernetes.github.io/ingress-nginx \
+     --namespace ingress-nginx --create-namespace
+   ```
+
+3. **Install cert-manager for SSL**:
    ```bash
    kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.0/cert-manager.yaml
    ```
 
-#### 3. Domain Setup
+#### 3. Domain Setup (GCP Console + Cloud Shell)
 
 1. **Purchase domain** or use existing domain
-2. **Configure Cloud DNS**:
+2. **Configure Cloud DNS (GCP Console)**:
    - Create DNS zone for your domain
    - Point domain nameservers to Google Cloud DNS
-3. **Get ingress IP**:
+3. **Get ingress IP (Cloud Shell)**:
    ```bash
    kubectl get service -n ingress-nginx ingress-nginx-controller
    ```
-4. **Create A record**: Point your domain to the ingress external IP
+4. **Create A record (GCP Console)**: Point your domain to the ingress external IP
 
 #### 4. Environment Variables
 
@@ -250,29 +269,24 @@ Configure the following in your Kubernetes secrets and deployments:
 | PGDATABASE | postgres | Database name |
 | PGPORT | 5432 | PostgreSQL port |
 
-#### 5. Service Account for GitHub Actions
+#### 5. Service Account for GitHub Actions (GCP Console)
 
-1. **Create service account**:
-   ```bash
-   gcloud iam service-accounts create fibonacci-calculator-deployer \
-     --description="Service account for GitHub Actions deployment" \
-     --display-name="Fibonacci Calculator Deployer"
-   ```
+1. **Navigate to IAM & Admin > Service Accounts** in the GCP Console
+2. **Click "Create Service Account"**:
+   - Service account name: `fibonacci-calculator-deployer`
+   - Description: `Service account for GitHub Actions deployment`
+   - Click "Create and Continue"
+3. **Grant permissions**:
+   - Add role: `Kubernetes Engine Developer`
+   - Click "Continue" then "Done"
+4. **Create and download key**:
+   - Click on the created service account
+   - Go to "Keys" tab
+   - Click "Add Key" > "Create new key"
+   - Choose "JSON" format
+   - Download the JSON file (this will be your `GKE_SA_KEY` secret)
 
-2. **Grant permissions**:
-   ```bash
-   gcloud projects add-iam-policy-binding PROJECT_ID \
-     --member="serviceAccount:fibonacci-calculator-deployer@PROJECT_ID.iam.gserviceaccount.com" \
-     --role="roles/container.developer"
-   ```
-
-3. **Create and download key**:
-   ```bash
-   gcloud iam service-accounts keys create service-account.json \
-     --iam-account=fibonacci-calculator-deployer@PROJECT_ID.iam.gserviceaccount.com
-   ```
-
-#### 6. GitHub Repository Secrets
+#### 6. GitHub Repository Secrets (GitHub Web Interface)
 
 Required secrets for CI/CD pipeline:
 
